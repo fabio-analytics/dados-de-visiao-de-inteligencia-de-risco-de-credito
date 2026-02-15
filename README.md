@@ -1,2 +1,2 @@
-# credit-risk-intelligence-visiondata
+# credit-risk-intelligence-visiondata-ia
 "📊 End-to-end Credit Risk solution powered by Machine Learning &amp; Streamlit. Features real-time simulation, dark mode UI, and automated reporting."
