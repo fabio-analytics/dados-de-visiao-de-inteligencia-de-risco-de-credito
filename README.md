@@ -1,2 +1,21 @@
-# credit-risk-intelligence-visiondata-ia
-"📊 End-to-end Credit Risk solution powered by Machine Learning &amp; Streamlit. Features real-time simulation, dark mode UI, and automated reporting."
+# 🛡️ VisionData Pro - Análise de Risco de Crédito
+
+Este é um Dashboard interativo desenvolvido para auxiliar na tomada de decisão de concessão de crédito. O projeto utiliza Machine Learning para prever a probabilidade de inadimplência, ajudando a identificar riscos financeiros antes da concessão do empréstimo.
+
+## 🚀 Funcionalidades
+- **Dashboard Gerencial:** Visualização clara de KPIs como volume total, taxa de juros média e índice de inadimplência.
+- **Análise Visual Premium:** Gráficos estáticos de alta performance (gerados com Seaborn/Matplotlib) integrados em uma interface moderna.
+- **Simulador de IA:** Um motor de Machine Learning (Random Forest) que avalia o perfil do cliente em tempo real e sugere aprovação ou reprovação.
+- **Design System:** Interface profissional com suporte a Modo Dark/Light e Glassmorphism.
+
+## 🛠️ Tecnologias Utilizadas
+- **Python** (Linguagem Principal)
+- **Streamlit** (Framework de Web App)
+- **Scikit-Learn** (Machine Learning)
+- **Pandas & Seaborn** (Manipulação e Visualização de Dados)
+
+## 📦 Como rodar este projeto?
+1. Clone este repositório.
+2. Instale as dependências:
+   ```bash
+   pip install -r requirements.txt
