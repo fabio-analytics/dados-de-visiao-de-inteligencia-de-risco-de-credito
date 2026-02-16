@@ -1,5 +1,5 @@
 # 🛡️ VisionData Pro - Análise de Risco de Crédito
-### 🔴 Demo Online: [Clique para Acessar o Dashboard](https://dados-de-visiao-de-inteligencia-de-risco-de-credito-cdfzzxnoa4.streamlit.app/)
+### 🔴 Demo Online: [Clique para Acessar o Dashboard](https://dados-de-visiao-de-inteligencia-de-risco-de-credito.streamlit.app/)
 ---
 
 Este é um Dashboard interativo desenvolvido para auxiliar na tomada de decisão de concessão de crédito. O projeto utiliza Machine Learning para prever a probabilidade de inadimplência, ajudando a identificar riscos financeiros antes da concessão do empréstimo.
@@ -22,3 +22,4 @@ Este é um Dashboard interativo desenvolvido para auxiliar na tomada de decisão
    ```bash
 
    pip install -r requirements.txt
+
