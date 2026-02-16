@@ -10,18 +10,24 @@ import matplotlib.colors as mcolors
 st.set_page_config(page_title="VisionData Pro | Analytics", page_icon="💎", layout="wide")
 
 # --- 2. CONTROLE DE TEMA ---
-st.sidebar.markdown(f"<h1 style='text-align: left; color: #00E5FF;'>💎 VisionData</h1>", unsafe_allow_html=True)
+# Título da Sidebar com Gradiente
+st.sidebar.markdown(f"""
+    <h1 style='text-align: left; background: linear-gradient(45deg, #00E5FF, #7B1FA2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;'>
+        💎 VisionData
+    </h1>
+    """, unsafe_allow_html=True)
+
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎨 Personalização")
 
 # Botão de Troca de Tema
 modo_escuro = st.sidebar.toggle("Ativar Modo Dark Premium", value=True)
 
-# --- 3. DEFINIÇÃO DAS PALETAS (CORRIGIDO: ADICIONADO 'bg_hex') ---
+# --- 3. DEFINIÇÃO DAS PALETAS ---
 if modo_escuro:
     # TEMA DARK
     THEME = {
-        "bg_hex": "#0F2027", # <--- VOLTOU! O Heatmap precisa disso
+        "bg_hex": "#0F2027", 
         "bg_gradient": "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)",
         "sidebar_bg": "#0B151E",
         "card_bg": "rgba(255, 255, 255, 0.05)", 
@@ -40,14 +46,14 @@ if modo_escuro:
 else:
     # TEMA LIGHT
     THEME = {
-        "bg_hex": "#F5F7FA", # <--- VOLTOU! Cor sólida para gráficos
+        "bg_hex": "#F5F7FA", 
         "bg_gradient": "linear-gradient(135deg, #F5F7FA 0%, #C3CFE2 100%)",
         "sidebar_bg": "#FFFFFF",
         "card_bg": "rgba(255, 255, 255, 0.6)", 
         "card_border": "rgba(0, 0, 0, 0.1)",
-        "text_primary": "#2C3E50",      # Texto Escuro
+        "text_primary": "#2C3E50",      
         "text_secondary": "#1A237E",    
-        "metric_label": "#0D47A1",      # Azul Forte
+        "metric_label": "#0D47A1",      
         "accent": "#0D47A1",            
         "accent_secondary": "#FF6F00",
         "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.1)",
@@ -70,40 +76,34 @@ plt.rcParams.update({
     "axes.edgecolor": THEME["grid_color"]
 })
 
-# --- 4. CSS BLINDADO (PARA NÃO SUMIR TEXTOS) ---
+# --- 4. CSS BLINDADO ---
 st.markdown(f"""
     <style>
-    /* Fundo Geral */
     .stApp {{
         background: {THEME['bg_gradient']};
         background-attachment: fixed;
         color: {THEME['text_primary']};
     }}
     
-    /* --- BARRA LATERAL --- */
+    /* Sidebar */
     section[data-testid="stSidebar"] {{
         background-color: {THEME['sidebar_bg']} !important;
         border-right: 1px solid {THEME['card_border']};
     }}
-    
-    /* FORÇA A COR DE TODOS OS TEXTOS NA SIDEBAR (Botões, Labels, Sliders) */
     section[data-testid="stSidebar"] .stMarkdown, 
     section[data-testid="stSidebar"] h1,
-    section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] h3,
     section[data-testid="stSidebar"] p,
     section[data-testid="stSidebar"] label,
     section[data-testid="stSidebar"] span {{
         color: {THEME['text_primary']} !important;
     }}
     
-    /* CORREÇÃO DOS SLIDERS E INPUTS (Labels) */
     .stSlider label, .stNumberInput label, .stSelectbox label {{
         color: {THEME['text_primary']} !important;
         font-weight: 600;
     }}
 
-    /* --- CARTÕES --- */
+    /* Cartões */
     .glass-card {{
         background: {THEME['card_bg']};
         backdrop-filter: blur(16px);
@@ -114,16 +114,16 @@ st.markdown(f"""
         padding: 20px;
     }}
     
-    /* Títulos Principais */
+    /* Título Principal com Gradiente (O TOQUE FINAL) */
     .main-title {{
         font-size: 3.5rem;
         font-weight: 800;
         background: linear-gradient(90deg, {THEME['accent']}, {THEME['accent_secondary']});
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        text-shadow: 0px 0px 30px rgba(0, 229, 255, 0.3); /* Brilho Extra */
     }}
     
-    /* Cabeçalhos dos Gráficos */
     .card-header {{
         color: {THEME['accent']};
         font-weight: 700;
@@ -135,18 +135,17 @@ st.markdown(f"""
     
     .block-container {{ padding-top: 2rem; padding-bottom: 5rem; }}
     
-    /* Botão Colorido */
     .stButton > button {{
         background: linear-gradient(90deg, {THEME['accent']}, {THEME['accent_secondary']});
         border: none;
-        color: #fff !important; /* Texto do botão sempre branco */
+        color: #fff !important;
         font-weight: bold;
         text-transform: uppercase;
     }}
     </style>
     """, unsafe_allow_html=True)
 
-# --- 5. CARREGAMENTO DE DADOS ---
+# --- 5. CARREGAMENTO ---
 @st.cache_resource
 def load_data():
     try:
@@ -167,7 +166,6 @@ if df is not None:
     df_filtrado = df[df['purpose'].isin(filtro_proposito)]
 
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
-    # Cartão Sidebar Personalizado
     st.sidebar.markdown(f"""
     <div style='background: {THEME['card_bg']}; padding: 15px; border-radius: 10px; border: 1px solid {THEME['card_border']}'>
         <small style='color: {THEME['text_primary']}'>Contratos Filtrados</small><br>
@@ -181,12 +179,13 @@ st.sidebar.markdown("<br>", unsafe_allow_html=True)
 st.sidebar.link_button("🌐 VisionDataPro.com", "http://visiondatapro.com")
 
 # --- 7. ÁREA PRINCIPAL ---
+# Título Principal com a classe CSS de gradiente
 st.markdown('<div class="main-title">Executive Risk Overview</div>', unsafe_allow_html=True)
 st.markdown(f"<p style='color: {THEME['text_primary']}; font-size: 1.1rem;'>Dashboard Estratégico de Análise de Crédito com Inteligência Artificial.</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 
-# --- FUNÇÃO ESPECIAL KPI (MANTIDA) ---
+# --- FUNÇÃO KPI ---
 def exibir_kpi(titulo, valor, delta=None):
     delta_html = ""
     if delta:
@@ -269,7 +268,6 @@ if not df_filtrado.empty:
         cols = ['int.rate', 'fico', 'dti', 'installment', 'log.annual.inc']
         corr = df_filtrado[cols].corr()
         
-        # Mapa de Calor agora usa bg_hex (CORRIGIDO)
         cmap_colors = [THEME['bg_hex'], THEME['accent'], "#ffffff"] if modo_escuro else ["#ffffff", THEME['accent'], "#000000"]
         cmap = mcolors.LinearSegmentedColormap.from_list("", cmap_colors)
         
