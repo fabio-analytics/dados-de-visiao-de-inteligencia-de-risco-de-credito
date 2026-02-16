@@ -9,8 +9,7 @@ import matplotlib.colors as mcolors
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="VisionData Pro | Analytics", page_icon="💎", layout="wide")
 
-# --- 2. CONTROLE DE TEMA ---
-# Título na Barra Lateral
+# --- 2. CONTROLE DE TEMA (COM CORREÇÃO DE CORES) ---
 st.sidebar.markdown(f"<h1 style='text-align: left; color: #00E5FF;'>💎 VisionData</h1>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎨 Personalização")
@@ -20,15 +19,16 @@ modo_escuro = st.sidebar.toggle("Ativar Modo Dark Premium", value=True)
 
 # --- 3. DEFINIÇÃO DAS PALETAS ---
 if modo_escuro:
-    # TEMA DARK (Estilo "Deep Space Glass")
+    # TEMA DARK (Fundo Escuro / Letra Clara)
     THEME = {
         "bg_hex": "#0F2027", 
         "bg_gradient": "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)",
         "sidebar_bg": "#0B151E",
         "card_bg": "rgba(255, 255, 255, 0.05)", 
         "card_border": "rgba(255, 255, 255, 0.1)", 
-        "text_primary": "#FFFFFF",
-        "text_secondary": "#B0BEC5",
+        "text_primary": "#FFFFFF",      # Texto Principal Branco
+        "text_secondary": "#B0BEC5",    # Labels Cinza Claro
+        "metric_label": "#B0BEC5",      # COR DOS NOMES (Volume, Juros) - CLARO
         "accent": "#00E5FF",           
         "accent_secondary": "#7B1FA2", 
         "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.5)",
@@ -38,18 +38,19 @@ if modo_escuro:
     }
     plt.style.use('dark_background')
 else:
-    # TEMA LIGHT (Estilo "Platinum Mirror")
+    # TEMA LIGHT (Fundo Branco / Letra Escura e Azul)
     THEME = {
-        "bg_hex": "#FFFFFF", 
-        "bg_gradient": "linear-gradient(135deg, #E0EAFC 0%, #CFDEF3 100%)",
+        "bg_hex": "#F0F2F6", 
+        "bg_gradient": "linear-gradient(135deg, #F5F7FA 0%, #C3CFE2 100%)",
         "sidebar_bg": "#FFFFFF",
-        "card_bg": "rgba(255, 255, 255, 0.6)", 
-        "card_border": "rgba(255, 255, 255, 0.8)",
-        "text_primary": "#1A237E",      
-        "text_secondary": "#455A64",
+        "card_bg": "rgba(255, 255, 255, 0.8)", 
+        "card_border": "rgba(0, 0, 0, 0.1)",
+        "text_primary": "#2C3E50",      # Texto Principal Cinza Chumbo (Visual Profissional)
+        "text_secondary": "#1A237E",    # Texto Secundário Azul Escuro
+        "metric_label": "#1565C0",      # COR DOS NOMES (Volume, Juros) - AZUL FORTE
         "accent": "#0D47A1",            
         "accent_secondary": "#FF6F00",
-        "shadow": "0 8px 32px 0 rgba(31, 38, 135, 0.1)",
+        "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.1)",
         "grid_color": "#B0BEC5",
         "success": "#2E7D32",
         "danger": "#C62828"
@@ -69,7 +70,7 @@ plt.rcParams.update({
     "axes.edgecolor": THEME["grid_color"]
 })
 
-# --- 4. CSS AVANÇADO ---
+# --- 4. CSS AVANÇADO (CORREÇÃO DE CONTRASTE) ---
 st.markdown(f"""
     <style>
     .stApp {{
@@ -77,16 +78,21 @@ st.markdown(f"""
         background-attachment: fixed;
         color: {THEME['text_primary']};
     }}
+    
+    /* --- BARRA LATERAL --- */
     section[data-testid="stSidebar"] {{
         background-color: {THEME['sidebar_bg']} !important;
         border-right: 1px solid {THEME['card_border']};
     }}
+    /* Força a cor do texto na sidebar (inclusive o botão Toggle) */
     section[data-testid="stSidebar"] p, 
     section[data-testid="stSidebar"] span, 
-    section[data-testid="stSidebar"] label, 
-    section[data-testid="stSidebar"] div {{
+    section[data-testid="stSidebar"] div,
+    section[data-testid="stSidebar"] label {{
         color: {THEME['text_primary']} !important;
     }}
+    
+    /* --- CARTÕES E MÉTRICAS --- */
     div[data-testid="stMetric"], .glass-card {{
         background: {THEME['card_bg']};
         backdrop-filter: blur(16px);
@@ -96,17 +102,35 @@ st.markdown(f"""
         box-shadow: {THEME['shadow']};
         padding: 20px;
     }}
+    
+    /* Títulos Gerais */
     h1, h2, h3, h4 {{ color: {THEME['text_primary']} !important; font-family: 'Segoe UI', sans-serif; }}
-    div[data-testid="stMetricLabel"] {{ color: {THEME['text_secondary']} !important; }}
-    div[data-testid="stMetricValue"] {{ color: {THEME['accent']} !important; text-shadow: 0 0 10px rgba(0,229,255,0.3); }}
+    
+    /* --- CORREÇÃO: COR DOS LABELS DAS MÉTRICAS (Juros, Volume...) --- */
+    div[data-testid="stMetricLabel"] p {{
+        color: {THEME['metric_label']} !important; /* Aqui muda para AZUL no light */
+        font-weight: 600;
+    }}
+    div[data-testid="stMetricLabel"] {{
+        color: {THEME['metric_label']} !important; 
+    }}
+
+    /* Valores das Métricas */
+    div[data-testid="stMetricValue"] {{ 
+        color: {THEME['accent']} !important; 
+    }}
+
+    /* Título Principal Gradiente */
     .main-title {{
         font-size: 3.5rem;
         font-weight: 800;
         background: linear-gradient(90deg, {THEME['accent']}, {THEME['accent_secondary']});
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }}
+    
+    /* Cabeçalho dos Cartões */
     .card-header {{
         color: {THEME['accent']};
         font-weight: 700;
@@ -116,7 +140,10 @@ st.markdown(f"""
         margin-bottom: 15px;
         letter-spacing: 1px;
     }}
+    
     .block-container {{ padding-top: 2rem; padding-bottom: 5rem; }}
+    
+    /* Botão Colorido */
     .stButton > button {{
         background: linear-gradient(90deg, {THEME['accent']}, {THEME['accent_secondary']});
         border: none;
@@ -137,7 +164,6 @@ st.markdown(f"""
 @st.cache_resource
 def load_data():
     base_path = os.path.dirname(os.path.abspath(__file__))
-    # Verifica se os arquivos existem para evitar erro
     try:
         df = pd.read_csv('loan_data.csv')
         model = joblib.load('modelo_random_forest.pkl')
@@ -158,20 +184,20 @@ if df is not None:
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
     st.sidebar.markdown(f"""
     <div style='background: {THEME['card_bg']}; padding: 15px; border-radius: 10px; border: 1px solid {THEME['card_border']}'>
-        <small style='color: {THEME['text_secondary']}'>Contratos Filtrados</small><br>
+        <small style='color: {THEME['text_primary']}'>Contratos Filtrados</small><br>
         <strong style='color: {THEME['accent']}; font-size: 1.5em;'>{len(df_filtrado):,}</strong>
     </div>
     """, unsafe_allow_html=True)
 else:
     st.sidebar.warning("Arquivo loan_data.csv não encontrado.")
-    df_filtrado = pd.DataFrame() # DataFrame vazio para não quebrar
+    df_filtrado = pd.DataFrame() 
 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
 st.sidebar.link_button("🌐 VisionDataPro.com", "http://visiondatapro.com")
 
 # --- 7. ÁREA PRINCIPAL ---
 st.markdown('<div class="main-title">Executive Risk Overview</div>', unsafe_allow_html=True)
-st.markdown(f"<p style='color: {THEME['text_secondary']}; font-size: 1.1rem;'>Dashboard Estratégico de Análise de Crédito com Inteligência Artificial.</p>", unsafe_allow_html=True)
+st.markdown(f"<p style='color: {THEME['text_primary']}; font-size: 1.1rem;'>Dashboard Estratégico de Análise de Crédito com Inteligência Artificial.</p>", unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -234,7 +260,10 @@ if not df_filtrado.empty:
         fig4, ax4 = plt.subplots(figsize=(10, 5))
         cols = ['int.rate', 'fico', 'dti', 'installment', 'log.annual.inc']
         corr = df_filtrado[cols].corr()
-        cmap = mcolors.LinearSegmentedColormap.from_list("", [THEME['bg_hex'], THEME['accent'], "#ffffff"])
+        # Ajuste do Mapa de Calor para respeitar o tema
+        cmap_colors = [THEME['bg_hex'], THEME['accent'], "#ffffff"] if modo_escuro else ["#ffffff", THEME['accent'], "#000000"]
+        cmap = mcolors.LinearSegmentedColormap.from_list("", cmap_colors)
+        
         sns.heatmap(corr, annot=True, fmt=".2f", cmap=cmap, cbar_kws={'shrink': .8}, linewidths=0.5, linecolor=THEME['bg_hex'], ax=ax4)
         clean_plot(ax4)
         cbar = ax4.collections[0].colorbar
@@ -242,7 +271,7 @@ if not df_filtrado.empty:
         st.pyplot(fig4)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# --- 9. SIMULADOR IA (COM LÓGICA CORRIGIDA) ---
+# --- 9. SIMULADOR IA (COM LÓGICA DE REPROVAÇÃO MANTIDA) ---
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown(f"""
 <div class="glass-card" style="border: 1px solid {THEME['accent']}; box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);">
@@ -263,10 +292,9 @@ with col_in:
 with col_res:
     st.markdown("<br><br>", unsafe_allow_html=True)
     
-    # --- AQUI ESTÁ A CORREÇÃO DA LÓGICA ---
     if st.button("CALCULAR RISCO 🚀", use_container_width=True):
         
-        # 1. Regras de Bloqueio (Hard Rules) - Vem ANTES da IA
+        # 1. Regras de Bloqueio (Hard Rules)
         if s_fico < 660:
             st.error(f"❌ REPROVADO (Score Baixo)")
             st.caption("Motivo: Score FICO abaixo da política mínima (660).")
@@ -277,14 +305,11 @@ with col_res:
             
         # 2. Se passar das regras, chama a IA
         elif model:
-            # Prepara os dados pro modelo
             input_data = pd.DataFrame(0, index=[0], columns=model_cols)
             input_data['fico'] = s_fico
             input_data['dti'] = s_dti
             input_data['int.rate'] = s_int
             input_data['log.annual.inc'] = s_inc
-            
-            # Preenche colunas obrigatórias com padrão
             input_data['credit.policy'] = 1
             input_data['installment'] = 300
             input_data['days.with.cr.line'] = 4000
@@ -293,16 +318,13 @@ with col_res:
             
             prob = model.predict_proba(input_data)[0][1]
             
-            # Régua da IA
             if prob < 0.20: 
                 st.success(f"✅ APROVADO! (Risco: {prob:.1%})")
             elif prob < 0.40: 
                 st.warning(f"⚠️ ANÁLISE MANUAL (Risco: {prob:.1%})")
             else: 
                 st.error(f"❌ REPROVADO PELA IA (Risco: {prob:.1%})")
-        
         else:
-            # Caso o modelo não carregue, usa regra simples
             st.error("Erro: Modelo não carregado.")
 
 st.markdown('</div>', unsafe_allow_html=True)
@@ -310,7 +332,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # --- 10. RODAPÉ ---
 st.markdown("---")
 st.markdown(f"""
-<div style='text-align: center; color: {THEME['text_secondary']};'>
+<div style='text-align: center; color: {THEME['text_primary']};'>
     VisionData Pro © 2026 | Design by Fábio
 </div>
 """, unsafe_allow_html=True)
