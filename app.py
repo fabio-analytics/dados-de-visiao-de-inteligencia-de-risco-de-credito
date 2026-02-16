@@ -17,17 +17,18 @@ st.sidebar.markdown("### 🎨 Personalização")
 # Botão de Troca de Tema
 modo_escuro = st.sidebar.toggle("Ativar Modo Dark Premium", value=True)
 
-# --- 3. DEFINIÇÃO DAS PALETAS ---
+# --- 3. DEFINIÇÃO DAS PALETAS (CORRIGIDO: ADICIONADO 'bg_hex') ---
 if modo_escuro:
     # TEMA DARK
     THEME = {
+        "bg_hex": "#0F2027", # <--- VOLTOU! O Heatmap precisa disso
         "bg_gradient": "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)",
         "sidebar_bg": "#0B151E",
         "card_bg": "rgba(255, 255, 255, 0.05)", 
         "card_border": "rgba(255, 255, 255, 0.1)", 
         "text_primary": "#FFFFFF",      
         "text_secondary": "#B0BEC5",    
-        "metric_label": "#B0BEC5",      # Títulos KPIs (Cinza Claro)
+        "metric_label": "#B0BEC5",      
         "accent": "#00E5FF",           
         "accent_secondary": "#7B1FA2", 
         "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.5)",
@@ -39,13 +40,14 @@ if modo_escuro:
 else:
     # TEMA LIGHT
     THEME = {
+        "bg_hex": "#F5F7FA", # <--- VOLTOU! Cor sólida para gráficos
         "bg_gradient": "linear-gradient(135deg, #F5F7FA 0%, #C3CFE2 100%)",
         "sidebar_bg": "#FFFFFF",
         "card_bg": "rgba(255, 255, 255, 0.6)", 
         "card_border": "rgba(0, 0, 0, 0.1)",
-        "text_primary": "#2C3E50",      # Texto Geral Escuro
+        "text_primary": "#2C3E50",      # Texto Escuro
         "text_secondary": "#1A237E",    
-        "metric_label": "#0D47A1",      # Títulos KPIs (AZUL ESCURO FORTE - FORÇADO)
+        "metric_label": "#0D47A1",      # Azul Forte
         "accent": "#0D47A1",            
         "accent_secondary": "#FF6F00",
         "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.1)",
@@ -68,25 +70,40 @@ plt.rcParams.update({
     "axes.edgecolor": THEME["grid_color"]
 })
 
-# --- 4. CSS ---
+# --- 4. CSS BLINDADO (PARA NÃO SUMIR TEXTOS) ---
 st.markdown(f"""
     <style>
+    /* Fundo Geral */
     .stApp {{
         background: {THEME['bg_gradient']};
         background-attachment: fixed;
         color: {THEME['text_primary']};
     }}
     
-    /* Sidebar e Textos */
+    /* --- BARRA LATERAL --- */
     section[data-testid="stSidebar"] {{
         background-color: {THEME['sidebar_bg']} !important;
         border-right: 1px solid {THEME['card_border']};
     }}
-    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label {{
+    
+    /* FORÇA A COR DE TODOS OS TEXTOS NA SIDEBAR (Botões, Labels, Sliders) */
+    section[data-testid="stSidebar"] .stMarkdown, 
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] span {{
         color: {THEME['text_primary']} !important;
     }}
     
-    /* Cartões Gerais */
+    /* CORREÇÃO DOS SLIDERS E INPUTS (Labels) */
+    .stSlider label, .stNumberInput label, .stSelectbox label {{
+        color: {THEME['text_primary']} !important;
+        font-weight: 600;
+    }}
+
+    /* --- CARTÕES --- */
     .glass-card {{
         background: {THEME['card_bg']};
         backdrop-filter: blur(16px);
@@ -97,7 +114,7 @@ st.markdown(f"""
         padding: 20px;
     }}
     
-    /* Títulos */
+    /* Títulos Principais */
     .main-title {{
         font-size: 3.5rem;
         font-weight: 800;
@@ -106,7 +123,7 @@ st.markdown(f"""
         -webkit-text-fill-color: transparent;
     }}
     
-    /* Cabeçalhos */
+    /* Cabeçalhos dos Gráficos */
     .card-header {{
         color: {THEME['accent']};
         font-weight: 700;
@@ -118,11 +135,11 @@ st.markdown(f"""
     
     .block-container {{ padding-top: 2rem; padding-bottom: 5rem; }}
     
-    /* Botão */
+    /* Botão Colorido */
     .stButton > button {{
         background: linear-gradient(90deg, {THEME['accent']}, {THEME['accent_secondary']});
         border: none;
-        color: #fff;
+        color: #fff !important; /* Texto do botão sempre branco */
         font-weight: bold;
         text-transform: uppercase;
     }}
@@ -150,6 +167,7 @@ if df is not None:
     df_filtrado = df[df['purpose'].isin(filtro_proposito)]
 
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
+    # Cartão Sidebar Personalizado
     st.sidebar.markdown(f"""
     <div style='background: {THEME['card_bg']}; padding: 15px; border-radius: 10px; border: 1px solid {THEME['card_border']}'>
         <small style='color: {THEME['text_primary']}'>Contratos Filtrados</small><br>
@@ -168,11 +186,11 @@ st.markdown(f"<p style='color: {THEME['text_primary']}; font-size: 1.1rem;'>Dash
 
 st.markdown("---")
 
-# --- FUNÇÃO ESPECIAL PARA CRIAR OS KPI CARDS (FORÇA A COR) ---
+# --- FUNÇÃO ESPECIAL KPI (MANTIDA) ---
 def exibir_kpi(titulo, valor, delta=None):
     delta_html = ""
     if delta:
-        cor_delta = THEME['success'] if "Global" in delta else THEME['danger'] # Ajuste simples
+        cor_delta = THEME['success'] if "Global" in delta else THEME['danger']
         delta_html = f"<p style='color: {cor_delta}; font-size: 0.8rem; margin: 0;'>{delta}</p>"
         
     st.markdown(f"""
@@ -191,7 +209,7 @@ def exibir_kpi(titulo, valor, delta=None):
     </div>
     """, unsafe_allow_html=True)
 
-# KPIs COM HTML PURO (ADEUS BUG DE COR BRANCA!)
+# KPIs
 if not df_filtrado.empty:
     k1, k2, k3, k4 = st.columns(4)
     inad_filtrada = df_filtrado['not.fully.paid'].mean() * 100
@@ -250,8 +268,11 @@ if not df_filtrado.empty:
         fig4, ax4 = plt.subplots(figsize=(10, 5))
         cols = ['int.rate', 'fico', 'dti', 'installment', 'log.annual.inc']
         corr = df_filtrado[cols].corr()
+        
+        # Mapa de Calor agora usa bg_hex (CORRIGIDO)
         cmap_colors = [THEME['bg_hex'], THEME['accent'], "#ffffff"] if modo_escuro else ["#ffffff", THEME['accent'], "#000000"]
         cmap = mcolors.LinearSegmentedColormap.from_list("", cmap_colors)
+        
         sns.heatmap(corr, annot=True, fmt=".2f", cmap=cmap, cbar_kws={'shrink': .8}, linewidths=0.5, linecolor=THEME['bg_hex'], ax=ax4)
         clean_plot(ax4)
         cbar = ax4.collections[0].colorbar
