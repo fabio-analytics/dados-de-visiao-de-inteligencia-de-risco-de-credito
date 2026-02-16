@@ -9,7 +9,7 @@ import matplotlib.colors as mcolors
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="VisionData Pro | Analytics", page_icon="💎", layout="wide")
 
-# --- 2. CONTROLE DE TEMA (COM CORREÇÃO DE CORES) ---
+# --- 2. CONTROLE DE TEMA ---
 st.sidebar.markdown(f"<h1 style='text-align: left; color: #00E5FF;'>💎 VisionData</h1>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 st.sidebar.markdown("### 🎨 Personalização")
@@ -19,16 +19,17 @@ modo_escuro = st.sidebar.toggle("Ativar Modo Dark Premium", value=True)
 
 # --- 3. DEFINIÇÃO DAS PALETAS ---
 if modo_escuro:
-    # TEMA DARK (Fundo Escuro / Letra Clara)
+    # TEMA DARK
     THEME = {
         "bg_hex": "#0F2027", 
         "bg_gradient": "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)",
         "sidebar_bg": "#0B151E",
         "card_bg": "rgba(255, 255, 255, 0.05)", 
         "card_border": "rgba(255, 255, 255, 0.1)", 
-        "text_primary": "#FFFFFF",      # Texto Principal Branco
-        "text_secondary": "#B0BEC5",    # Labels Cinza Claro
-        "metric_label": "#B0BEC5",      # COR DOS NOMES (Volume, Juros) - CLARO
+        "text_primary": "#FFFFFF",      
+        "text_secondary": "#B0BEC5",    
+        "metric_label": "#B0BEC5",      # Cinza claro no escuro
+        "widget_label": "#FFFFFF",      # Texto do botão Toggle Branco
         "accent": "#00E5FF",           
         "accent_secondary": "#7B1FA2", 
         "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.5)",
@@ -38,16 +39,17 @@ if modo_escuro:
     }
     plt.style.use('dark_background')
 else:
-    # TEMA LIGHT (Fundo Branco / Letra Escura e Azul)
+    # TEMA LIGHT
     THEME = {
         "bg_hex": "#F0F2F6", 
         "bg_gradient": "linear-gradient(135deg, #F5F7FA 0%, #C3CFE2 100%)",
         "sidebar_bg": "#FFFFFF",
         "card_bg": "rgba(255, 255, 255, 0.8)", 
         "card_border": "rgba(0, 0, 0, 0.1)",
-        "text_primary": "#2C3E50",      # Texto Principal Cinza Chumbo (Visual Profissional)
-        "text_secondary": "#1A237E",    # Texto Secundário Azul Escuro
-        "metric_label": "#1565C0",      # COR DOS NOMES (Volume, Juros) - AZUL FORTE
+        "text_primary": "#2C3E50",      # Cinza Chumbo
+        "text_secondary": "#1A237E",    
+        "metric_label": "#0D47A1",      # AZUL ESCURO FORTE (Para não sumir)
+        "widget_label": "#000000",      # Texto do botão Toggle PRETO
         "accent": "#0D47A1",            
         "accent_secondary": "#FF6F00",
         "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.1)",
@@ -70,7 +72,7 @@ plt.rcParams.update({
     "axes.edgecolor": THEME["grid_color"]
 })
 
-# --- 4. CSS AVANÇADO (CORREÇÃO DE CONTRASTE) ---
+# --- 4. CSS BLINDADO (CORREÇÃO TOTAL) ---
 st.markdown(f"""
     <style>
     .stApp {{
@@ -84,15 +86,14 @@ st.markdown(f"""
         background-color: {THEME['sidebar_bg']} !important;
         border-right: 1px solid {THEME['card_border']};
     }}
-    /* Força a cor do texto na sidebar (inclusive o botão Toggle) */
-    section[data-testid="stSidebar"] p, 
-    section[data-testid="stSidebar"] span, 
-    section[data-testid="stSidebar"] div,
-    section[data-testid="stSidebar"] label {{
-        color: {THEME['text_primary']} !important;
+    
+    /* CORREÇÃO DO BOTÃO TOGGLE E TEXTOS DA SIDEBAR */
+    section[data-testid="stSidebar"] .stMarkdown p, 
+    section[data-testid="stSidebar"] label p {{
+        color: {THEME['widget_label']} !important; /* Força a cor certa no Toggle */
     }}
     
-    /* --- CARTÕES E MÉTRICAS --- */
+    /* --- CARTÕES --- */
     div[data-testid="stMetric"], .glass-card {{
         background: {THEME['card_bg']};
         backdrop-filter: blur(16px);
@@ -103,16 +104,16 @@ st.markdown(f"""
         padding: 20px;
     }}
     
-    /* Títulos Gerais */
-    h1, h2, h3, h4 {{ color: {THEME['text_primary']} !important; font-family: 'Segoe UI', sans-serif; }}
-    
-    /* --- CORREÇÃO: COR DOS LABELS DAS MÉTRICAS (Juros, Volume...) --- */
-    div[data-testid="stMetricLabel"] p {{
-        color: {THEME['metric_label']} !important; /* Aqui muda para AZUL no light */
-        font-weight: 600;
-    }}
+    /* --- CORREÇÃO SUPREMA DOS TÍTULOS (METRIC LABEL) --- */
+    /* Isso força TODOS os elementos dentro do título da métrica a obedecerem a cor */
     div[data-testid="stMetricLabel"] {{
-        color: {THEME['metric_label']} !important; 
+        color: {THEME['metric_label']} !important;
+    }}
+    div[data-testid="stMetricLabel"] p {{
+        color: {THEME['metric_label']} !important;
+    }}
+    div[data-testid="stMetricLabel"] div {{
+        color: {THEME['metric_label']} !important;
     }}
 
     /* Valores das Métricas */
@@ -120,14 +121,16 @@ st.markdown(f"""
         color: {THEME['accent']} !important; 
     }}
 
-    /* Título Principal Gradiente */
+    /* Títulos Gerais */
+    h1, h2, h3, h4 {{ color: {THEME['text_primary']} !important; }}
+
+    /* Título Principal */
     .main-title {{
         font-size: 3.5rem;
         font-weight: 800;
         background: linear-gradient(90deg, {THEME['accent']}, {THEME['accent_secondary']});
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     }}
     
     /* Cabeçalho dos Cartões */
@@ -138,7 +141,6 @@ st.markdown(f"""
         border-bottom: 1px solid {THEME['card_border']};
         padding-bottom: 10px;
         margin-bottom: 15px;
-        letter-spacing: 1px;
     }}
     
     .block-container {{ padding-top: 2rem; padding-bottom: 5rem; }}
@@ -150,12 +152,6 @@ st.markdown(f"""
         color: #fff;
         font-weight: bold;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        transition: 0.3s;
-    }}
-    .stButton > button:hover {{
-        transform: scale(1.02);
-        box-shadow: 0 0 20px {THEME['accent']};
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -189,7 +185,6 @@ if df is not None:
     </div>
     """, unsafe_allow_html=True)
 else:
-    st.sidebar.warning("Arquivo loan_data.csv não encontrado.")
     df_filtrado = pd.DataFrame() 
 
 st.sidebar.markdown("<br>", unsafe_allow_html=True)
@@ -212,7 +207,7 @@ if not df_filtrado.empty:
     with k3: st.metric("Taxa de Risco", f"{inad_filtrada:.2f}%", delta=f"{delta_inad:.2f}% vs Global", delta_color="inverse")
     with k4: st.metric("Score FICO", f"{int(df_filtrado['fico'].mean())}")
 
-    # --- 8. GRÁFICOS PREMIUM ---
+    # --- 8. GRÁFICOS ---
     def clean_plot(ax):
         sns.despine(ax=ax, left=True, bottom=True)
         ax.grid(True, axis='y', linestyle='--', linewidth=0.5, color=THEME['grid_color'], alpha=0.3)
@@ -260,10 +255,8 @@ if not df_filtrado.empty:
         fig4, ax4 = plt.subplots(figsize=(10, 5))
         cols = ['int.rate', 'fico', 'dti', 'installment', 'log.annual.inc']
         corr = df_filtrado[cols].corr()
-        # Ajuste do Mapa de Calor para respeitar o tema
         cmap_colors = [THEME['bg_hex'], THEME['accent'], "#ffffff"] if modo_escuro else ["#ffffff", THEME['accent'], "#000000"]
         cmap = mcolors.LinearSegmentedColormap.from_list("", cmap_colors)
-        
         sns.heatmap(corr, annot=True, fmt=".2f", cmap=cmap, cbar_kws={'shrink': .8}, linewidths=0.5, linecolor=THEME['bg_hex'], ax=ax4)
         clean_plot(ax4)
         cbar = ax4.collections[0].colorbar
@@ -271,7 +264,7 @@ if not df_filtrado.empty:
         st.pyplot(fig4)
         st.markdown('</div>', unsafe_allow_html=True)
 
-# --- 9. SIMULADOR IA (COM LÓGICA DE REPROVAÇÃO MANTIDA) ---
+# --- 9. SIMULADOR IA ---
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown(f"""
 <div class="glass-card" style="border: 1px solid {THEME['accent']}; box-shadow: 0 0 20px rgba(0, 229, 255, 0.1);">
@@ -293,17 +286,12 @@ with col_res:
     st.markdown("<br><br>", unsafe_allow_html=True)
     
     if st.button("CALCULAR RISCO 🚀", use_container_width=True):
-        
-        # 1. Regras de Bloqueio (Hard Rules)
         if s_fico < 660:
             st.error(f"❌ REPROVADO (Score Baixo)")
             st.caption("Motivo: Score FICO abaixo da política mínima (660).")
-            
         elif s_dti > 25:
             st.error(f"❌ REPROVADO (Endividamento)")
             st.caption("Motivo: Comprometimento de renda (DTI) acima de 25%.")
-            
-        # 2. Se passar das regras, chama a IA
         elif model:
             input_data = pd.DataFrame(0, index=[0], columns=model_cols)
             input_data['fico'] = s_fico
@@ -315,15 +303,10 @@ with col_res:
             input_data['days.with.cr.line'] = 4000
             input_data['revol.bal'] = 10000
             input_data['revol.util'] = 50
-            
             prob = model.predict_proba(input_data)[0][1]
-            
-            if prob < 0.20: 
-                st.success(f"✅ APROVADO! (Risco: {prob:.1%})")
-            elif prob < 0.40: 
-                st.warning(f"⚠️ ANÁLISE MANUAL (Risco: {prob:.1%})")
-            else: 
-                st.error(f"❌ REPROVADO PELA IA (Risco: {prob:.1%})")
+            if prob < 0.20: st.success(f"✅ APROVADO! (Risco: {prob:.1%})")
+            elif prob < 0.40: st.warning(f"⚠️ ANÁLISE MANUAL (Risco: {prob:.1%})")
+            else: st.error(f"❌ REPROVADO PELA IA (Risco: {prob:.1%})")
         else:
             st.error("Erro: Modelo não carregado.")
 
