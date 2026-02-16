@@ -21,15 +21,13 @@ modo_escuro = st.sidebar.toggle("Ativar Modo Dark Premium", value=True)
 if modo_escuro:
     # TEMA DARK
     THEME = {
-        "bg_hex": "#0F2027", 
         "bg_gradient": "linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%)",
         "sidebar_bg": "#0B151E",
         "card_bg": "rgba(255, 255, 255, 0.05)", 
         "card_border": "rgba(255, 255, 255, 0.1)", 
         "text_primary": "#FFFFFF",      
         "text_secondary": "#B0BEC5",    
-        "metric_label": "#B0BEC5",      # Cinza claro no escuro
-        "widget_label": "#FFFFFF",      # Texto do botão Toggle Branco
+        "metric_label": "#B0BEC5",      # Títulos KPIs (Cinza Claro)
         "accent": "#00E5FF",           
         "accent_secondary": "#7B1FA2", 
         "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.5)",
@@ -41,15 +39,13 @@ if modo_escuro:
 else:
     # TEMA LIGHT
     THEME = {
-        "bg_hex": "#F0F2F6", 
         "bg_gradient": "linear-gradient(135deg, #F5F7FA 0%, #C3CFE2 100%)",
         "sidebar_bg": "#FFFFFF",
-        "card_bg": "rgba(255, 255, 255, 0.8)", 
+        "card_bg": "rgba(255, 255, 255, 0.6)", 
         "card_border": "rgba(0, 0, 0, 0.1)",
-        "text_primary": "#2C3E50",      # Cinza Chumbo
+        "text_primary": "#2C3E50",      # Texto Geral Escuro
         "text_secondary": "#1A237E",    
-        "metric_label": "#0D47A1",      # AZUL ESCURO FORTE (Para não sumir)
-        "widget_label": "#000000",      # Texto do botão Toggle PRETO
+        "metric_label": "#0D47A1",      # Títulos KPIs (AZUL ESCURO FORTE - FORÇADO)
         "accent": "#0D47A1",            
         "accent_secondary": "#FF6F00",
         "shadow": "0 8px 32px 0 rgba(0, 0, 0, 0.1)",
@@ -72,7 +68,7 @@ plt.rcParams.update({
     "axes.edgecolor": THEME["grid_color"]
 })
 
-# --- 4. CSS BLINDADO (CORREÇÃO TOTAL) ---
+# --- 4. CSS ---
 st.markdown(f"""
     <style>
     .stApp {{
@@ -81,20 +77,17 @@ st.markdown(f"""
         color: {THEME['text_primary']};
     }}
     
-    /* --- BARRA LATERAL --- */
+    /* Sidebar e Textos */
     section[data-testid="stSidebar"] {{
         background-color: {THEME['sidebar_bg']} !important;
         border-right: 1px solid {THEME['card_border']};
     }}
-    
-    /* CORREÇÃO DO BOTÃO TOGGLE E TEXTOS DA SIDEBAR */
-    section[data-testid="stSidebar"] .stMarkdown p, 
-    section[data-testid="stSidebar"] label p {{
-        color: {THEME['widget_label']} !important; /* Força a cor certa no Toggle */
+    section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] label {{
+        color: {THEME['text_primary']} !important;
     }}
     
-    /* --- CARTÕES --- */
-    div[data-testid="stMetric"], .glass-card {{
+    /* Cartões Gerais */
+    .glass-card {{
         background: {THEME['card_bg']};
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
@@ -104,27 +97,7 @@ st.markdown(f"""
         padding: 20px;
     }}
     
-    /* --- CORREÇÃO SUPREMA DOS TÍTULOS (METRIC LABEL) --- */
-    /* Isso força TODOS os elementos dentro do título da métrica a obedecerem a cor */
-    div[data-testid="stMetricLabel"] {{
-        color: {THEME['metric_label']} !important;
-    }}
-    div[data-testid="stMetricLabel"] p {{
-        color: {THEME['metric_label']} !important;
-    }}
-    div[data-testid="stMetricLabel"] div {{
-        color: {THEME['metric_label']} !important;
-    }}
-
-    /* Valores das Métricas */
-    div[data-testid="stMetricValue"] {{ 
-        color: {THEME['accent']} !important; 
-    }}
-
-    /* Títulos Gerais */
-    h1, h2, h3, h4 {{ color: {THEME['text_primary']} !important; }}
-
-    /* Título Principal */
+    /* Títulos */
     .main-title {{
         font-size: 3.5rem;
         font-weight: 800;
@@ -133,7 +106,7 @@ st.markdown(f"""
         -webkit-text-fill-color: transparent;
     }}
     
-    /* Cabeçalho dos Cartões */
+    /* Cabeçalhos */
     .card-header {{
         color: {THEME['accent']};
         font-weight: 700;
@@ -145,7 +118,7 @@ st.markdown(f"""
     
     .block-container {{ padding-top: 2rem; padding-bottom: 5rem; }}
     
-    /* Botão Colorido */
+    /* Botão */
     .stButton > button {{
         background: linear-gradient(90deg, {THEME['accent']}, {THEME['accent_secondary']});
         border: none;
@@ -159,7 +132,6 @@ st.markdown(f"""
 # --- 5. CARREGAMENTO DE DADOS ---
 @st.cache_resource
 def load_data():
-    base_path = os.path.dirname(os.path.abspath(__file__))
     try:
         df = pd.read_csv('loan_data.csv')
         model = joblib.load('modelo_random_forest.pkl')
@@ -196,16 +168,39 @@ st.markdown(f"<p style='color: {THEME['text_primary']}; font-size: 1.1rem;'>Dash
 
 st.markdown("---")
 
-# KPIs
+# --- FUNÇÃO ESPECIAL PARA CRIAR OS KPI CARDS (FORÇA A COR) ---
+def exibir_kpi(titulo, valor, delta=None):
+    delta_html = ""
+    if delta:
+        cor_delta = THEME['success'] if "Global" in delta else THEME['danger'] # Ajuste simples
+        delta_html = f"<p style='color: {cor_delta}; font-size: 0.8rem; margin: 0;'>{delta}</p>"
+        
+    st.markdown(f"""
+    <div style="
+        background-color: {THEME['card_bg']};
+        border: 1px solid {THEME['card_border']};
+        padding: 15px;
+        border-radius: 15px;
+        box-shadow: {THEME['shadow']};
+        text-align: center;
+        backdrop-filter: blur(10px);
+    ">
+        <p style="color: {THEME['metric_label']}; font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; text-transform: uppercase;">{titulo}</p>
+        <h2 style="color: {THEME['accent']}; margin: 0; font-size: 1.8rem;">{valor}</h2>
+        {delta_html}
+    </div>
+    """, unsafe_allow_html=True)
+
+# KPIs COM HTML PURO (ADEUS BUG DE COR BRANCA!)
 if not df_filtrado.empty:
     k1, k2, k3, k4 = st.columns(4)
     inad_filtrada = df_filtrado['not.fully.paid'].mean() * 100
     delta_inad = inad_filtrada - (df['not.fully.paid'].mean() * 100)
 
-    with k1: st.metric("Volume Analisado", f"{len(df_filtrado):,}")
-    with k2: st.metric("Juros Médios", f"{df_filtrado['int.rate'].mean()*100:.2f}%")
-    with k3: st.metric("Taxa de Risco", f"{inad_filtrada:.2f}%", delta=f"{delta_inad:.2f}% vs Global", delta_color="inverse")
-    with k4: st.metric("Score FICO", f"{int(df_filtrado['fico'].mean())}")
+    with k1: exibir_kpi("Volume Analisado", f"{len(df_filtrado):,}")
+    with k2: exibir_kpi("Juros Médios", f"{df_filtrado['int.rate'].mean()*100:.2f}%")
+    with k3: exibir_kpi("Taxa de Risco", f"{inad_filtrada:.2f}%", f"{delta_inad:+.2f}% vs Global")
+    with k4: exibir_kpi("Score FICO", f"{int(df_filtrado['fico'].mean())}")
 
     # --- 8. GRÁFICOS ---
     def clean_plot(ax):
