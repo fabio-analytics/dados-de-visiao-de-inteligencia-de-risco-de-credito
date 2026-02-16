@@ -286,25 +286,36 @@ with col_in:
 
 with col_res:
     st.markdown("<br><br>", unsafe_allow_html=True)
+   # --- BOTÃO DE CÁLCULO (COM NOVA CALIBRAGEM) ---
     if st.button("CALCULAR RISCO 🚀", use_container_width=True):
         if model:
+            # 1. Cria o dataframe com os inputs do usuário
             input_data = pd.DataFrame(0, index=[0], columns=model_cols)
-            input_data['fico'], input_data['dti'], input_data['int.rate'], input_data['log.annual.inc'] = s_fico, s_dti, s_int, s_inc
-            prob = model.predict_proba(input_data)[0][1]
+            input_data['fico'] = s_fico
+            input_data['dti'] = s_dti
+            input_data['int.rate'] = s_int
+            input_data['log.annual.inc'] = s_inc
             
-            if prob < 0.2: st.success(f"✅ APROVADO! ({prob:.1%})")
-            elif prob < 0.5: st.warning(f"⚠️ ANÁLISE MANUAL ({prob:.1%})")
-            else: st.error(f"❌ REPROVADO ({prob:.1%})")
+            # Preenche valores padrão para o que não pedimos (para o modelo não quebrar)
+            input_data['credit.policy'] = 1
+            input_data['installment'] = 300  # Valor médio
+            input_data['days.with.cr.line'] = 4500 # Valor médio
+            input_data['revol.bal'] = 15000 # Valor médio
+            input_data['revol.util'] = 50 # Valor médio
+            
+            # 2. Pega a probabilidade (O Cérebro da IA)
+            # prob_calote é a chance de NÃO pagar (Classe 1)
+            prob_calote = model.predict_proba(input_data)[0][1]
+            
+            # 3. EXIBE O RESULTADO
+            # Se a chance de calote for maior que 20%, o Banco nega! (Régua Alta)
+            if prob_calote > 0.20:
+                st.error(f"❌ CRÉDITO NEGADO (Alto Risco)")
+                st.metric(label="Probabilidade de Calote (Inadimplência)", value=f"{prob_calote*100:.1f}%", delta="-Alto Risco", delta_color="inverse")
+                st.write("Motivo: O perfil financeiro apresenta indicadores de instabilidade baseados no histórico do LendingClub.")
+            else:
+                st.success(f"✅ CRÉDITO APROVADO")
+                st.metric(label="Probabilidade de Calote (Inadimplência)", value=f"{prob_calote*100:.1f}%", delta="Risco Baixo", delta_color="normal")
+                st.write("Parabéns! O perfil foi classificado como seguro para concessão de crédito.")
         else:
-            if s_fico > 700: st.success("✅ APROVADO (Simulado)")
-            else: st.error("❌ REPROVADO (Simulado)")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# --- 10. RODAPÉ ---
-st.markdown("---")
-st.markdown(f"""
-<div style='text-align: center; color: {THEME['text_secondary']};'>
-    VisionData Pro © 2026 | Design by Fábio
-</div>
-""", unsafe_allow_html=True)
+            st.error("Erro: Modelo não carregado.")
