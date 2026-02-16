@@ -7,72 +7,72 @@ import seaborn as sns
 # --- 1. CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="VisionData Pro | Analytics", page_icon="💎", layout="wide")
 
-# --- 2. CARREGAMENTO DOS DADOS E MODELO ---
+# --- 2. CARREGAMENTO ---
 @st.cache_resource
 def load_data():
     try:
-        # Carrega o Dataset para fazer os gráficos
         df = pd.read_csv('loan_data.csv')
-        # Carrega o Modelo
         model = joblib.load('modelo_random_forest.pkl')
         cols = joblib.load('colunas_modelo.pkl')
         return df, model, cols
-    except Exception as e:
+    except:
         return None, None, None
 
 df, model, model_cols = load_data()
 
-# --- 3. BARRA LATERAL (INPUTS) ---
-st.sidebar.markdown(f"<h1 style='text-align: left; color: #9B59B6;'>💎 VisionData 2.0</h1>", unsafe_allow_html=True)
-st.sidebar.info("Simulador de Crédito com IA + Regras de Bloqueio")
-st.sidebar.markdown("---")
-
-st.sidebar.header("📝 Perfil do Cliente")
-# Inputs movidos para a lateral para dar espaço aos gráficos
-s_fico = st.sidebar.slider("Score FICO", 300, 850, 630, help="Abaixo de 660 reprova.")
-s_dti = st.sidebar.slider("DTI (Dívida/Renda %)", 0.0, 40.0, 20.0)
-s_inc = st.sidebar.number_input("Renda Anual (Log)", 5.0, 15.0, 10.5)
-s_int = st.sidebar.number_input("Taxa de Juros (%)", 5.0, 25.0, 12.0) / 100
-
-st.sidebar.markdown("---")
-calcular = st.sidebar.button("CALCULAR RISCO 🚀", type="primary")
-
-# --- 4. ÁREA PRINCIPAL (RESULTADOS E GRÁFICOS) ---
-
+# --- 3. CABEÇALHO ---
 st.markdown("""
-    <h2 style='text-align: center;'>
-        🛡️ Dashboard de Análise de Risco
-    </h2>
+    <h1 style='text-align: center; color: white;'>
+        🛡️ VisionData Pro <span style='color: #00E5FF;'>Credit Analytics</span>
+    </h1>
+    <p style='text-align: center; color: gray;'>Machine Learning Credit Scoring System</p>
     <hr>
 """, unsafe_allow_html=True)
 
-# Só mostra o resultado se clicar no botão
+# --- 4. ÁREA DE INPUTS (LAYOUT CENTRAL) ---
+st.subheader("📝 Simulação de Cliente")
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    s_fico = st.number_input("Score FICO", 300, 850, 630, help="Abaixo de 640 reprova automaticamente.")
+with col2:
+    s_dti = st.number_input("DTI (Dívida %)", 0.0, 40.0, 20.0)
+with col3:
+    s_inc = st.number_input("Renda Log (Ex: 10.5)", 5.0, 15.0, 10.5)
+with col4:
+    s_int = st.number_input("Taxa de Juros (%)", 5.0, 25.0, 12.0) / 100
+
+# Botão Grande Centralizado
+col_vazia_esq, col_btn, col_vazia_dir = st.columns([1, 2, 1])
+with col_btn:
+    calcular = st.button("CALCULAR RISCO 🚀", use_container_width=True, type="primary")
+
+# --- 5. LÓGICA DE CÁLCULO (HÍBRIDA) ---
 if calcular:
+    st.markdown("---")
     
-    # --- LÓGICA DE APROVAÇÃO (HARD RULES) ---
+    # REGRAS DE BLOQUEIO (HARD RULES)
     decision = "APROVADO"
     motivo = ""
     probabilidade = 0.10
-    classe_risco = "Baixo"
-    cor_box = "success"
-
-    # 1. Regra FICO Baixo
-    if s_fico < 660:
-        decision = "NEGADO"
-        motivo = "Score FICO abaixo do mínimo aceitável (660)."
-        probabilidade = 0.88
-        classe_risco = "Altíssimo"
-        cor_box = "error"
+    cor = "success"
     
-    # 2. Regra DTI Alto
+    # Regra 1: FICO Baixo
+    if s_fico < 640:
+        decision = "NEGADO"
+        motivo = "Score FICO abaixo do mínimo aceitável (640)."
+        probabilidade = 0.85
+        cor = "error"
+    
+    # Regra 2: DTI Alto
     elif s_dti > 22:
         decision = "NEGADO"
         motivo = "Comprometimento de renda (DTI) excessivo."
-        probabilidade = 0.75
-        classe_risco = "Alto"
-        cor_box = "error"
-    
-    # 3. Consulta IA (Se passar das regras acima)
+        probabilidade = 0.78
+        cor = "error"
+        
+    # Regra 3: IA (Só chama se passar das regras acima)
     elif model:
         # Prepara dados
         input_data = pd.DataFrame(0, index=[0], columns=model_cols)
@@ -89,59 +89,66 @@ if calcular:
         
         prob_ia = model.predict_proba(input_data)[0][1]
         
-        if prob_ia > 0.25:
+        if prob_ia > 0.30: # Régua da IA
             decision = "NEGADO"
-            motivo = "IA detectou padrão histórico de calote."
+            motivo = "Modelo de IA identificou alto risco."
             probabilidade = prob_ia
-            classe_risco = "Moderado-Alto"
-            cor_box = "error"
+            cor = "error"
         else:
-            decision = "APROVADO"
-            motivo = "Perfil sólido segundo histórico."
             probabilidade = prob_ia
-            classe_risco = "Seguro"
-            cor_box = "success"
 
-    # --- EXIBIÇÃO DOS RESULTADOS (KPIs) ---
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Decisão Final", decision, delta=classe_risco, delta_color="inverse" if decision=="NEGADO" else "normal")
-    c2.metric("Probabilidade de Calote", f"{probabilidade*100:.1f}%")
-    c3.metric("Score do Cliente", s_fico)
+    # EXIBIÇÃO DO RESULTADO
+    c_res1, c_res2 = st.columns([1, 3])
+    with c_res1:
+        st.metric("Resultado Final", decision, delta="Risco Calculado", delta_color="inverse" if decision=="NEGADO" else "normal")
+    with c_res2:
+        if decision == "NEGADO":
+            st.error(f"❌ **CRÉDITO REPROVADO:** {motivo}")
+        else:
+            st.success("✅ **CRÉDITO APROVADO:** Cliente com bom perfil pagador.")
+            
+    st.progress(int(probabilidade * 100), text=f"Probabilidade de Calote: {probabilidade*100:.1f}%")
 
-    if decision == "NEGADO":
-        st.error(f"❌ **CRÉDITO NEGADO:** {motivo}")
-    else:
-        st.success(f"✅ **CRÉDITO APROVADO:** {motivo}")
+# --- 6. GRÁFICOS (VISUAL CLÁSSICO DE 4 COLUNAS) ---
+st.markdown("---")
+mostrar_graficos = st.checkbox("📊 Exibir Análise Exploratória (Dashboard)", value=True)
+
+if mostrar_graficos and df is not None:
+    st.markdown("### Panorama da Carteira de Crédito")
     
-    st.markdown("---")
-
-# --- 5. OS GRÁFICOS (VISUALIZAÇÃO DE DADOS) ---
-# Se o arquivo csv estiver carregado, mostra os gráficos
-if df is not None:
-    st.markdown("### 📊 Comparativo com a Base de Dados")
+    # Layout de 2 linhas e 2 colunas para os gráficos
+    g_col1, g_col2 = st.columns(2)
     
-    col_g1, col_g2 = st.columns(2)
-
-    # Gráfico 1: Onde o cliente está no FICO?
-    with col_g1:
-        st.markdown("**Distribuição de FICO Score**")
+    # Linha 1
+    with g_col1:
+        st.caption("Distribuição de FICO Scores")
         fig1, ax1 = plt.subplots(figsize=(6, 4))
-        sns.histplot(data=df, x='fico', hue='not.fully.paid', bins=25, kde=True, palette="viridis", ax=ax1)
-        # Linha vermelha mostrando o cliente
-        plt.axvline(s_fico, color='red', linestyle='--', linewidth=3, label='Você Está Aqui')
-        plt.legend()
+        sns.histplot(data=df, x='fico', hue='not.fully.paid', bins=20, palette='viridis', ax=ax1)
+        plt.axvline(s_fico, color='red', linestyle='--', label='Você')
         st.pyplot(fig1)
-        st.caption("A linha vermelha mostra seu Score comparado com todos os clientes do banco.")
 
-    # Gráfico 2: Relação DTI x Juros
-    with col_g2:
-        st.markdown("**Análise de Endividamento (DTI)**")
+    with g_col2:
+        st.caption("Taxa de Juros por Dívida")
         fig2, ax2 = plt.subplots(figsize=(6, 4))
-        # Filtra um pouco para não ficar pesado
-        sns.scatterplot(data=df.sample(500), x='dti', y='int.rate', hue='not.fully.paid', palette="coolwarm", ax=ax2)
-        plt.scatter(s_dti, s_int, color='red', s=200, marker='X', label='Você') # Marca o cliente com um X
+        sns.scatterplot(data=df.sample(300), x='dti', y='int.rate', hue='not.fully.paid', palette='coolwarm', ax=ax2)
+        plt.scatter(s_dti, s_int, color='red', s=100, marker='X', label='Você')
         st.pyplot(fig2)
-        st.caption("O 'X' vermelho mostra sua posição de Dívida vs Juros.")
 
-else:
-    st.warning("Arquivo 'loan_data.csv' não encontrado. Suba o CSV para ver os gráficos!")
+    g_col3, g_col4 = st.columns(2)
+    
+    # Linha 2
+    with g_col3:
+        st.caption("Finalidade dos Empréstimos")
+        fig3, ax3 = plt.subplots(figsize=(6, 4))
+        sns.countplot(data=df, y='purpose', palette='magma', ax=ax3)
+        st.pyplot(fig3)
+
+    with g_col4:
+        st.caption("Renda Anual (Log)")
+        fig4, ax4 = plt.subplots(figsize=(6, 4))
+        sns.boxplot(data=df, x='not.fully.paid', y='log.annual.inc', palette='pastel', ax=ax4)
+        plt.axhline(s_inc, color='red', linestyle='--', label='Você')
+        st.pyplot(fig4)
+
+elif mostrar_graficos:
+    st.warning("Carregando gráficos... (Verifique se loan_data.csv está no GitHub)")
